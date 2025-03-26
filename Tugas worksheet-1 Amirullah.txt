@@ -1,0 +1,204 @@
+Tugas1 Database
+
+Microsoft Windows [Version 10.0.17134.799]
+(c) 2018 Microsoft Corporation. All rights reserved.
+
+C:\Users\USER>D:
+
+D:\>cd \xampp\mysql
+
+D:\xampp\mysql>cd \bin
+The system cannot find the path specified.
+
+D:\xampp\mysql>cd bin
+
+D:\xampp\mysql\bin>mysql -u root -p
+Enter password:
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 8
+Server version: 10.4.32-MariaDB mariadb.org binary distribution
+
+Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+MariaDB [(none)]> SELECT USER(); SELECT NOW();
++----------------+
+| USER()         |
++----------------+
+| root@localhost |
++----------------+
+1 row in set (1.696 sec)
+
++---------------------+
+| NOW()               |
++---------------------+
+| 2025-03-26 10:44:09 |
++---------------------+
+1 row in set (0.013 sec)
+
+MariaDB [(none)]> SHOW DATABASES
+    -> ;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| phpmyadmin         |
+| test               |
++--------------------+
+5 rows in set (1.880 sec)
+
+MariaDB [(none)]> use dbpos_SIBMandiri
+Database changed
+MariaDB [dbpos_SIBMandiri]> CREATE TABLE pesanan(
+    -> id int NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    -> tanggal date,
+    -> total double,
+    -> pelanggan_id int NOT NULL REFERENCES pelanggan(id));
+Query OK, 0 rows affected (0.498 sec)
+
+MariaDB [dbpos_SIBMandiri]> SHOW TABLES;
++----------------------------+
+| Tables_in_dbpos_sibmandiri |
++----------------------------+
+| kartu                      |
+| pelanggan                  |
+| pesanan                    |
++----------------------------+
+3 rows in set (0.001 sec)
+
+MariaDB [dbpos_SIBMandiri]> CREATE TABLE pembayaran(
+    -> id int NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    -> nokuitansi varchar(10) UNIQUE,
+    -> tanggal date,
+    -> jumlah double,
+    -> ke int,
+    -> pesanan_id INT NOT NULL REFERENCES pesanan(id));
+Query OK, 0 rows affected (2.064 sec)
+
+MariaDB [dbpos_SIBMandiri]> SHOW TABLES;
++----------------------------+
+| Tables_in_dbpos_sibmandiri |
++----------------------------+
+| kartu                      |
+| pelanggan                  |
+| pembayaran                 |
+| pesanan                    |
++----------------------------+
+4 rows in set (0.001 sec)
+
+MariaDB [dbpos_SIBMandiri]> CREATE TABLE jenis_produk(
+    -> id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    -> nama varchar(45));
+Query OK, 0 rows affected (1.929 sec)
+
+MariaDB [dbpos_SIBMandiri]> SHOW TABLES;
++----------------------------+
+| Tables_in_dbpos_sibmandiri |
++----------------------------+
+| jenis_produk               |
+| kartu                      |
+| pelanggan                  |
+| pembayaran                 |
+| pesanan                    |
++----------------------------+
+5 rows in set (0.001 sec)
+
+MariaDB [dbpos_SIBMandiri]> CREATE TABLE produk(
+    -> id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    -> kode varchar(10) UNIQUE,
+    -> nama varchar(45),
+    -> harga_beli double,
+    -> harga_jual double,
+    -> stok int,
+    -> min_stok int,
+    -> jenis_produk_id int NOT NULL REFERENCES jenis_produk (id));
+Query OK, 0 rows affected (2.048 sec)
+
+MariaDB [dbpos_SIBMandiri]> SHOW TABLES;
++----------------------------+
+| Tables_in_dbpos_sibmandiri |
++----------------------------+
+| jenis_produk               |
+| kartu                      |
+| pelanggan                  |
+| pembayaran                 |
+| pesanan                    |
+| produk                     |
++----------------------------+
+6 rows in set (0.001 sec)
+
+MariaDB [dbpos_SIBMandiri]> CREATE TABLE pesanan_items(
+    -> id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    -> qty int,
+    -> harga double,
+    -> produk_id int NOT NULL REFERENCES produk (id),
+    -> pesanan_id int NOT NULL REFERENCES pesanan (id));
+Query OK, 0 rows affected (0.333 sec)
+
+MariaDB [dbpos_SIBMandiri]> SHOW TABLES;
++----------------------------+
+| Tables_in_dbpos_sibmandiri |
++----------------------------+
+| jenis_produk               |
+| kartu                      |
+| pelanggan                  |
+| pembayaran                 |
+| pesanan                    |
+| pesanan_items              |
+| produk                     |
++----------------------------+
+7 rows in set (0.001 sec)
+
+MariaDB [dbpos_SIBMandiri]> CREATE TABLE pembelian(
+    -> id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    -> tanggal varchar(45),
+    -> nomor varchar(10),
+    -> produk_id int NOT NULL REFERENCES produk (id),
+    -> jumlah int,
+    -> harga double,
+    -> vendor_id int NOT NULL REFERENCES vendor (id));
+Query OK, 0 rows affected (2.062 sec)
+
+MariaDB [dbpos_SIBMandiri]> SHOW TABLES;
++----------------------------+
+| Tables_in_dbpos_sibmandiri |
++----------------------------+
+| jenis_produk               |
+| kartu                      |
+| pelanggan                  |
+| pembayaran                 |
+| pembelian                  |
+| pesanan                    |
+| pesanan_items              |
+| produk                     |
++----------------------------+
+8 rows in set (0.001 sec)
+
+MariaDB [dbpos_SIBMandiri]> CREATE TABLE vendor(
+    -> id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    -> nomor varchar(4),
+    -> nama varchar(45),
+    -> kota varchar(30),
+    -> kontak varchar(30));
+Query OK, 0 rows affected (1.941 sec)
+
+MariaDB [dbpos_SIBMandiri]> SHOW TABLES;
++----------------------------+
+| Tables_in_dbpos_sibmandiri |
++----------------------------+
+| jenis_produk               |
+| kartu                      |
+| pelanggan                  |
+| pembayaran                 |
+| pembelian                  |
+| pesanan                    |
+| pesanan_items              |
+| produk                     |
+| vendor                     |
++----------------------------+
+9 rows in set (0.001 sec)
+
+MariaDB [dbpos_SIBMandiri]>
