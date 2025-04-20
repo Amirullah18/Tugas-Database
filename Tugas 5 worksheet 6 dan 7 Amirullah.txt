@@ -1,0 +1,358 @@
+SOAL 6.1
+
+1. Buatlah Procedure untuk mengupdate harga_jual berdasarkan jenis produk tertentu (jenis_produk_id), beri nama procedure
+pro_naikan_harga memiliki parameter yang akan menerima argumen: Jenis Produk ID dan Persentase kenaikan harga.
+
+MariaDB [dbkoperasi_sibmandiri]> DELIMITER $$
+MariaDB [dbkoperasi_sibmandiri]> CREATE PROCEDURE pro_naikan(
+    -> IN jenis_produk INT,
+    -> IN persentasi_kenaikan INT )
+    -> BEGIN
+    -> UPDATE produk SET harga_jual = harga_jual + (harga_jual * persentasi_kenaikan / 100)
+    -> WHERE jenis_produk_id = jenis_produk;
+    -> END $$
+Query OK, 0 rows affected (1.943 sec)
+
+MariaDB [dbkoperasi_sibmandiri]> DELIMITER ;
+MariaDB [dbkoperasi_sibmandiri]> SELECT id, nama, jenis_produk_id, harga_jual FROM produk;
++----+------------------+-----------------+------------+
+| id | nama             | jenis_produk_id | harga_jual |
++----+------------------+-----------------+------------+
+|  1 | Televisi 21 inch |               1 |    5040000 |
+|  2 | Televisi 40 inch |               1 |    7440000 |
+|  3 | Kulkas 2 pintu   |               1 |    4680000 |
+|  4 | Meja Makan       |               2 |     600000 |
+|  5 | Teh Kotak        |               4 |       3500 |
+|  6 | PC Desktop HP    |               5 |    9600000 |
+|  7 | Teh Botol        |               4 |       2500 |
+|  8 | Notebook Acer    |               5 |   10800000 |
+|  9 | Notebook Lenovo  |               5 |   12000000 |
+| 10 | Laptop HP        |               5 |   13000000 |
++----+------------------+-----------------+------------+
+10 rows in set (0.001 sec)
+
+2. Buat fungsi umur dengan parameter yang menerima inputan argumen tipe data date dan mengembalikan hasil perhitungan umur
+(tahun sekarang dikurang tahun inputan) dengan tipe data bilangan bulat (integer) positif.
+
+MariaDB [dbkoperasi_sibmandiri]> DELIMITER $$
+MariaDB [dbkoperasi_sibmandiri]> CREATE FUNCTION umur(tgl_lahir DATE)
+    -> RETURNS INT
+    -> BEGIN
+    -> DECLARE umur INT;
+    -> SET umur = YEAR(CURDATE()) - YEAR(tgl_lahir);
+    -> RETURN umur;
+    -> END $$
+Query OK, 0 rows affected (1.866 sec)
+
+MariaDB [dbkoperasi_sibmandiri]> DELIMITER ;
+MariaDB [dbkoperasi_sibmandiri]> SELECT nama, umur(tgl_lahir) AS umur FROM pelanggan;
++---------------+------+
+| nama          | umur |
++---------------+------+
+| Agung Sedayu  |   15 |
+| Pandan Wangi  |   75 |
+| Sekar Mirah   |   42 |
+| Swandaru Geni |   44 |
+| Pradabashu    |   40 |
+| Gayatri Dwi   |   38 |
+| Dewi Gyat     |   37 |
+| Andre Haru    |   35 |
+| Ahmad Hasan   |   33 |
+| Cassanndra    |   35 |
++---------------+------+
+10 rows in set (0.001 sec)
+
+
+TUGAS 6.1
+3. Buat fungsi kategori_harga dengan parameter yang menerima inputan argument tipe data double dan mengembalikan tipe data string kategori harga berdasarkan: 
+? 0 – 500rb : murah
+? 500rb – 3 juta : sedang
+? 3jt – 10 juta : mahal 
+? > 10 juta : sangat mahal
+
+MariaDB [dbkoperasi_sibmandiri]> DELIMITER $$
+MariaDB [dbkoperasi_sibmandiri]> CREATE FUNCTION kategori_harga2(harga DOUBLE)
+    -> RETURNS VARCHAR(20)
+    -> BEGIN
+    -> DECLARE kategori VARCHAR(20);
+    -> CASE
+    -> WHEN harga <= 500000 THEN
+    -> SET kategori = 'Murah';
+    -> WHEN harga > 500000 AND harga <= 3000000 THEN
+    -> SET kategori = 'Sedang';
+    -> WHEN harga > 3000000 AND harga <= 10000000 THEN
+    -> SET kategori = 'Mahal';
+    -> ELSE
+    -> SET kategori = 'Sangat Mahal';
+    -> END CASE;
+    -> RETURN kategori;
+    -> END $$
+Query OK, 0 rows affected (0.213 sec)
+
+MariaDB [dbkoperasi_sibmandiri]> DELIMITER ;
+MariaDB [dbkoperasi_sibmandiri]> SELECT nama, harga_jual, kategori_harga2(harga_jual) AS kategori FROM produk;
++------------------+------------+--------------+
+| nama             | harga_jual | kategori     |
++------------------+------------+--------------+
+| Televisi 21 inch |    5040000 | Mahal        |
+| Televisi 40 inch |    7440000 | Mahal        |
+| Kulkas 2 pintu   |    4680000 | Mahal        |
+| Meja Makan       |     600000 | Sedang       |
+| Teh Kotak        |       3500 | Murah        |
+| PC Desktop HP    |    9600000 | Mahal        |
+| Teh Botol        |       2500 | Murah        |
+| Notebook Acer    |   10800000 | Sangat Mahal |
+| Notebook Lenovo  |   12000000 | Sangat Mahal |
+| Laptop HP        |   13000000 | Sangat Mahal |
++------------------+------------+--------------+
+10 rows in set (1.626 sec)
+
+SOAL 6.2
+
+1. Buatlah bisnis proses pembayaran dengan menggunakan trigers, dengan skenario sebagai berikut :
+- pelanggan memesan didalam table pesanan
+- dilanjutkan dengan proses pembayaran di table pembayaran
+- didalam table pembayaran tambahkan kolom status_pembayaran
+- jika pesanan sudah dibayar maka status pembayaran akan berubah menjadi lunas
+
+MariaDB [dbkoperasi_sibmandiri]> SELECT *FROM pesanan;
++----+------------+---------+--------------+
+| id | tanggal    | total   | pelanggan_id |
++----+------------+---------+--------------+
+|  1 | 2015-11-04 | 9720000 |            1 |
+|  2 | 2015-11-04 |   17500 |            3 |
+|  3 | 2015-11-04 |       0 |            6 |
+|  4 | 2015-11-04 |       0 |            7 |
+|  5 | 2015-11-04 |       0 |           10 |
+|  6 | 2015-11-04 |       0 |            2 |
+|  7 | 2015-11-04 |       0 |            5 |
+|  8 | 2015-11-04 |       0 |            4 |
+|  9 | 2015-11-04 |       0 |            8 |
+| 10 | 2015-11-04 |       0 |            9 |
++----+------------+---------+--------------+
+10 rows in set (0.000 sec)
+
+MariaDB [dbkoperasi_sibmandiri]> ALTER TABLE pembayaran ADD status_pembayaran varchar(25);
+Query OK, 0 rows affected (2.067 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+MariaDB [dbkoperasi_sibmandiri]> DESC pembayaran;
++-------------------+-------------+------+-----+---------+----------------+
+| Field             | Type        | Null | Key | Default | Extra          |
++-------------------+-------------+------+-----+---------+----------------+
+| id                | int(11)     | NO   | PRI | NULL    | auto_increment |
+| nokuitansi        | varchar(10) | YES  | UNI | NULL    |                |
+| tanggal           | date        | YES  |     | NULL    |                |
+| jumlah            | double      | YES  |     | NULL    |                |
+| ke                | int(11)     | YES  |     | NULL    |                |
+| pesanan_id        | int(11)     | NO   | MUL | NULL    |                |
+| status_pembayaran | varchar(25) | YES  |     | NULL    |                |
++-------------------+-------------+------+-----+---------+----------------+
+7 rows in set (1.603 sec)
+
+MariaDB [dbkoperasi_sibmandiri]> DELIMITER $$
+MariaDB [dbkoperasi_sibmandiri]> CREATE TRIGGER cek_pembayaran BEFORE INSERT ON pembayaran
+    -> FOR EACH ROW
+    -> BEGIN
+    -> DECLARE total_bayar DECIMAL(10, 2);
+    -> DECLARE total_pesanan DECIMAL(10, 2);
+    -> SELECT SUM(jumlah) INTO total_bayar FROM pembayaran
+    -> WHERE pesanan_id = NEW.pesanan_id;
+    -> SELECT total INTO total_pesanan FROM pesanan
+    -> WHERE id = NEW.pesanan_id;
+    -> IF total_bayar + NEW.jumlah >= total_pesanan THEN
+    -> SET NEW.status_pembayaran = 'Lunas';
+    -> ELSE
+    -> SET NEW.status_pembayaran = 'Belum Lunas';
+    -> END IF;
+    -> END $$
+Query OK, 0 rows affected (1.846 sec)
+
+MariaDB [dbkoperasi_sibmandiri]> DELIMITER ;
+MariaDB [dbkoperasi_sibmandiri]> SELECT * FROM pesanan;
++----+------------+---------+--------------+
+| id | tanggal    | total   | pelanggan_id |
++----+------------+---------+--------------+
+|  1 | 2015-11-04 | 9720000 |            1 |
+|  2 | 2015-11-04 |   17500 |            3 |
+|  3 | 2015-11-04 |       0 |            6 |
+|  4 | 2015-11-04 |       0 |            7 |
+|  5 | 2015-11-04 |       0 |           10 |
+|  6 | 2015-11-04 |       0 |            2 |
+|  7 | 2015-11-04 |       0 |            5 |
+|  8 | 2015-11-04 |       0 |            4 |
+|  9 | 2015-11-04 |       0 |            8 |
+| 10 | 2015-11-04 |       0 |            9 |
++----+------------+---------+--------------+
+10 rows in set (0.001 sec)
+
+MariaDB [dbkoperasi_sibmandiri]> desc pembayaran;
++-------------------+-------------+------+-----+---------+----------------+
+| Field             | Type        | Null | Key | Default | Extra          |
++-------------------+-------------+------+-----+---------+----------------+
+| id                | int(11)     | NO   | PRI | NULL    | auto_increment |
+| nokuitansi        | varchar(10) | YES  | UNI | NULL    |                |
+| tanggal           | date        | YES  |     | NULL    |                |
+| jumlah            | double      | YES  |     | NULL    |                |
+| ke                | int(11)     | YES  |     | NULL    |                |
+| pesanan_id        | int(11)     | NO   | MUL | NULL    |                |
+| status_pembayaran | varchar(25) | YES  |     | NULL    |                |
++-------------------+-------------+------+-----+---------+----------------+
+7 rows in set (1.664 sec)
+
+MariaDB [dbkoperasi_sibmandiri]> INSERT INTO pembayaran (nokuitansi, tanggal, jumlah, ke, pesanan_id) VALUES
+    -> ('KW01', '2023-03-03', 200000, 1, 2);
+Query OK, 1 row affected (1.836 sec)
+
+MariaDB [dbkoperasi_sibmandiri]> SELECT * FROM pembayaran;
++----+------------+------------+--------+------+------------+-------------------+
+| id | nokuitansi | tanggal    | jumlah | ke   | pesanan_id | status_pembayaran |
++----+------------+------------+--------+------+------------+-------------------+
+|  1 | KW01       | 2023-03-03 | 200000 |    1 |          2 | Belum Lunas       |
++----+------------+------------+--------+------+------------+-------------------+
+1 row in set (0.001 sec)
+
+TUGAS 6.2
+
+2. Buatlah Stored Procedure dengan nama kurangi_stok untuk mengurangi stok produk.
+Stok berkurang sesuai dengan jumlah pesanan produk.
+
+MariaDB [dbkoperasi_sibmandiri]> DELIMITER $$
+MariaDB [dbkoperasi_sibmandiri]> CREATE OR REPLACE TRIGGER kurangiStok
+    -> AFTER INSERT ON pesanan_items
+    -> FOR EACH ROW
+    -> BEGIN
+    -> UPDATE produk SET stok = stok - NEW.qty
+    -> WHERE id = NEW.produk_id;
+    -> END $$
+Query OK, 0 rows affected (0.263 sec)
+
+MariaDB [dbkoperasi_sibmandiri]> DELIMITER ;
+MariaDB [dbkoperasi_sibmandiri]> SELECT * FROM produk;
++----+------+------------------+------------+------------+------+----------+-----------------+
+| id | kode | nama             | harga_beli | harga_jual | stok | min_stok | jenis_produk_id |
++----+------+------------------+------------+------------+------+----------+-----------------+
+|  1 | TV01 | Televisi 21 inch |    3500000 |    5040000 |    5 |        2 |               1 |
+|  2 | TV02 | Televisi 40 inch |    5500000 |    7440000 |    4 |        2 |               1 |
+|  3 | K001 | Kulkas 2 pintu   |    3500000 |    4680000 |    6 |        2 |               1 |
+|  4 | M001 | Meja Makan       |     500000 |     600000 |    4 |        3 |               2 |
+|  5 | TK01 | Teh Kotak        |       3000 |       3500 |    6 |       10 |               4 |
+|  6 | PC01 | PC Desktop HP    |    7000000 |    9600000 |    9 |        2 |               5 |
+|  7 | TB01 | Teh Botol        |       2000 |       2500 |   40 |       10 |               4 |
+|  8 | AC01 | Notebook Acer    |    8000000 |   10800000 |    7 |        2 |               5 |
+|  9 | LN01 | Notebook Lenovo  |    9000000 |   12000000 |    9 |        2 |               5 |
+| 10 | L004 | Laptop HP        |   12000000 |   13000000 |    2 |        5 |               5 |
++----+------+------------------+------------+------------+------+----------+-----------------+
+10 rows in set (0.001 sec)
+
+MariaDB [dbkoperasi_sibmandiri]> SELECT * FROM pesanan_items;
++----+-----------+------------+------+---------+
+| id | produk_id | pesanan_id | qty  | harga   |
++----+-----------+------------+------+---------+
+|  1 |         1 |          1 |    1 | 5040000 |
+|  2 |         3 |          1 |    1 | 4680000 |
+|  3 |         5 |          2 |    5 |    3500 |
+|  6 |         5 |          3 |   10 |    3500 |
+|  7 |         1 |          3 |    1 | 5040000 |
+|  9 |         5 |          5 |   10 |    3500 |
+| 10 |         5 |          6 |   20 |    3500 |
+| 11 |         8 |          7 |    4 |  200000 |
+| 12 |         7 |          5 |    3 |  300000 |
+| 13 |        10 |          7 |    9 |  400000 |
+| 15 |         7 |          2 |    5 |    2500 |
++----+-----------+------------+------+---------+
+11 rows in set (0.008 sec)
+
+MariaDB [dbkoperasi_sibmandiri]> INSERT INTO pesanan_items (produk_id, pesanan_id, qty, harga) VALUES
+    -> (7, 5, 10, 2500);
+Query OK, 1 row affected (1.850 sec)
+
+MariaDB [dbkoperasi_sibmandiri]> SELECT * FROM produk;
++----+------+------------------+------------+------------+------+----------+-----------------+
+| id | kode | nama             | harga_beli | harga_jual | stok | min_stok | jenis_produk_id |
++----+------+------------------+------------+------------+------+----------+-----------------+
+|  1 | TV01 | Televisi 21 inch |    3500000 |    5040000 |    5 |        2 |               1 |
+|  2 | TV02 | Televisi 40 inch |    5500000 |    7440000 |    4 |        2 |               1 |
+|  3 | K001 | Kulkas 2 pintu   |    3500000 |    4680000 |    6 |        2 |               1 |
+|  4 | M001 | Meja Makan       |     500000 |     600000 |    4 |        3 |               2 |
+|  5 | TK01 | Teh Kotak        |       3000 |       3500 |    6 |       10 |               4 |
+|  6 | PC01 | PC Desktop HP    |    7000000 |    9600000 |    9 |        2 |               5 |
+|  7 | TB01 | Teh Botol        |       2000 |       2500 |   20 |       10 |               4 |
+|  8 | AC01 | Notebook Acer    |    8000000 |   10800000 |    7 |        2 |               5 |
+|  9 | LN01 | Notebook Lenovo  |    9000000 |   12000000 |    9 |        2 |               5 |
+| 10 | L004 | Laptop HP        |   12000000 |   13000000 |    2 |        5 |               5 |
++----+------+------------------+------------+------------+------+----------+-----------------+
+10 rows in set (0.000 sec)
+
+MariaDB [dbkoperasi_sibmandiri]> SELECT * FROM pesanan_items;
++----+-----------+------------+------+---------+
+| id | produk_id | pesanan_id | qty  | harga   |
++----+-----------+------------+------+---------+
+|  1 |         1 |          1 |    1 | 5040000 |
+|  2 |         3 |          1 |    1 | 4680000 |
+|  3 |         5 |          2 |    5 |    3500 |
+|  6 |         5 |          3 |   10 |    3500 |
+|  7 |         1 |          3 |    1 | 5040000 |
+|  9 |         5 |          5 |   10 |    3500 |
+| 10 |         5 |          6 |   20 |    3500 |
+| 11 |         8 |          7 |    4 |  200000 |
+| 12 |         7 |          5 |    3 |  300000 |
+| 13 |        10 |          7 |    9 |  400000 |
+| 15 |         7 |          2 |    5 |    2500 |
+| 16 |         7 |          5 |   10 |    2500 |
++----+-----------+------------+------+---------+
+12 rows in set (0.000 sec)
+
+3. Buatlah Trigger dengan nama trig_kurangi_stok yang akan mengurangi stok produk jika terjadi transaksi pesanan oleh pelanggan
+(memanggil stored procedure kurangi_stok soal no 2). Trigger ini aktif setelah trigger after_pesanan_items_insert (trigger pada contoh 3).
+
+MariaDB [dbkoperasi_sibmandiri]> DELIMITER $$
+MariaDB [dbkoperasi_sibmandiri]> CREATE OR REPLACE TRIGGER trigKurangiStok
+    -> AFTER INSERT ON pesanan_items
+    -> FOR EACH ROW
+    -> BEGIN
+    -> UPDATE produk SET stok = stok - NEW.qty
+    -> WHERE id = NEW.produk_id;
+    -> END $$
+Query OK, 0 rows affected (1.950 sec)
+
+MariaDB [dbkoperasi_sibmandiri]> DELIMITER ;
+MariaDB [dbkoperasi_sibmandiri]> SELECT * FROM produk;
++----+------+------------------+------------+------------+------+----------+-----------------+
+| id | kode | nama             | harga_beli | harga_jual | stok | min_stok | jenis_produk_id |
++----+------+------------------+------------+------------+------+----------+-----------------+
+|  1 | TV01 | Televisi 21 inch |    3500000 |    5040000 |    5 |        2 |               1 |
+|  2 | TV02 | Televisi 40 inch |    5500000 |    7440000 |    4 |        2 |               1 |
+|  3 | K001 | Kulkas 2 pintu   |    3500000 |    4680000 |    6 |        2 |               1 |
+|  4 | M001 | Meja Makan       |     500000 |     600000 |    4 |        3 |               2 |
+|  5 | TK01 | Teh Kotak        |       3000 |       3500 |    6 |       10 |               4 |
+|  6 | PC01 | PC Desktop HP    |    7000000 |    9600000 |    9 |        2 |               5 |
+|  7 | TB01 | Teh Botol        |       2000 |       2500 |   20 |       10 |               4 |
+|  8 | AC01 | Notebook Acer    |    8000000 |   10800000 |    7 |        2 |               5 |
+|  9 | LN01 | Notebook Lenovo  |    9000000 |   12000000 |    9 |        2 |               5 |
+| 10 | L004 | Laptop HP        |   12000000 |   13000000 |    2 |        5 |               5 |
++----+------+------------------+------------+------------+------+----------+-----------------+
+10 rows in set (0.000 sec)
+
+MariaDB [dbkoperasi_sibmandiri]> INSERT INTO pesanan_items (produk_id, pesanan_id, qty, harga) VALUES
+    -> (9, 2, 4, 12000000);
+Query OK, 1 row affected (1.842 sec)
+
+MariaDB [dbkoperasi_sibmandiri]> SELECT * FROM produk;
++----+------+------------------+------------+------------+------+----------+-----------------+
+| id | kode | nama             | harga_beli | harga_jual | stok | min_stok | jenis_produk_id |
++----+------+------------------+------------+------------+------+----------+-----------------+
+|  1 | TV01 | Televisi 21 inch |    3500000 |    5040000 |    5 |        2 |               1 |
+|  2 | TV02 | Televisi 40 inch |    5500000 |    7440000 |    4 |        2 |               1 |
+|  3 | K001 | Kulkas 2 pintu   |    3500000 |    4680000 |    6 |        2 |               1 |
+|  4 | M001 | Meja Makan       |     500000 |     600000 |    4 |        3 |               2 |
+|  5 | TK01 | Teh Kotak        |       3000 |       3500 |    6 |       10 |               4 |
+|  6 | PC01 | PC Desktop HP    |    7000000 |    9600000 |    9 |        2 |               5 |
+|  7 | TB01 | Teh Botol        |       2000 |       2500 |   20 |       10 |               4 |
+|  8 | AC01 | Notebook Acer    |    8000000 |   10800000 |    7 |        2 |               5 |
+|  9 | LN01 | Notebook Lenovo  |    9000000 |   12000000 |   -3 |        2 |               5 |
+| 10 | L004 | Laptop HP        |   12000000 |   13000000 |    2 |        5 |               5 |
++----+------+------------------+------------+------------+------+----------+-----------------+
+10 rows in set (0.000 sec)
+
+MariaDB [dbkoperasi_sibmandiri]>
