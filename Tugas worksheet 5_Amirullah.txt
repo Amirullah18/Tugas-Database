@@ -1,0 +1,208 @@
+SOAL 5.1
+
+soal 1
+MariaDB [dbkoperasi_sibmandiri]> SELECT
+    -> p.kode AS kode_pelanggan,
+    -> p.nama AS nama_pelanggan,
+    -> k.kode AS kode_kartu,
+    -> k.nama AS nama_kartu,
+    -> k.diskon,
+    -> pes.id AS id_pesanan,
+    -> pes.tanggal AS tanggal_pesanan,
+    -> pes.total AS total_pesanan
+    -> FROM pelanggan p
+    -> INNER JOIN pesanan pes ON p.id = pes.pelanggan_id
+    -> INNER JOIN kartu k ON p.kartu_id = k.id;
++----------------+----------------+------------+---------------+--------+------------+-----------------+---------------+
+| kode_pelanggan | nama_pelanggan | kode_kartu | nama_kartu    | diskon | id_pesanan | tanggal_pesanan | total_pesanan |
++----------------+----------------+------------+---------------+--------+------------+-----------------+---------------+
+| C001           | Agung Sedayu   | GOLD       | Gold Utama    |   0.05 |          1 | 2015-11-04      |       9720000 |
+| C003           | Sekar Mirah    | GOLD       | Gold Utama    |   0.05 |          2 | 2015-11-04      |         17500 |
+| C006           | Gayatri Dwi    | GOLD       | Gold Utama    |   0.05 |          3 | 2015-11-04      |             0 |
+| C007           | Dewi Gyat      | GOLD       | Gold Utama    |   0.05 |          4 | 2015-11-04      |             0 |
+| C010           | Cassanndra     | GOLD       | Gold Utama    |   0.05 |          5 | 2015-11-04      |             0 |
+| C002           | Pandan Wangi   | PLAT       | Platinum Jaya |    0.1 |          6 | 2015-11-04      |             0 |
+| C005           | Pradabashu     | PLAT       | Platinum Jaya |    0.1 |          7 | 2015-11-04      |             0 |
+| C004           | Swandaru Geni  | NO         | Non Member    |      0 |          8 | 2015-11-04      |             0 |
+| C008           | Andre Haru     | NO         | Non Member    |      0 |          9 | 2015-11-04      |             0 |
+| C009           | Ahmad Hasan    | NO         | Non Member    |      0 |         10 | 2015-11-04      |             0 |
++----------------+----------------+------------+---------------+--------+------------+-----------------+---------------+
+10 rows in set (0.001 sec)
+
+soal 2
+MariaDB [dbkoperasi_sibmandiri]> SELECT
+    -> p.id AS id_pembelian,
+    -> p.tanggal AS tanggal_pembelian,
+    -> p.nomor AS nomor_pembelian,
+    -> p.jumlah AS jumlah_pembelian,
+    -> p.harga AS harga_pembelian,
+    -> pro.nama AS nama_produk,
+    -> v.nama AS nama_vendor,
+    -> v.Kontak AS kontak_vendor
+    -> FROM pembelian p
+    -> INNER JOIN produk pro ON p.produk_id = pro.id
+    -> INNER JOIN vendor v ON p.vendor_id = v.id;
++--------------+-------------------+-----------------+------------------+-----------------+------------------+----------------------+-----------------+
+| id_pembelian | tanggal_pembelian | nomor_pembelian | jumlah_pembelian | harga_pembelian | nama_produk      | nama_vendor          | kontak_vendor   |
++--------------+-------------------+-----------------+------------------+-----------------+------------------+----------------------+-----------------+
+|            1 | 2019-10-10        | P001            |                2 |         3500000 | Televisi 21 inch | PT Guna Samudra      | Ali Nurdin      |
+|            2 | 2019-11-20        | P002            |                5 |         5500000 | Televisi 40 inch | PT Pondok C9         | Putri Ramadhani |
+|            3 | 2019-12-12        | P003            |                5 |         5400000 | Televisi 40 inch | PT Guna Samudra      | Ali Nurdin      |
+|            4 | 2020-01-20        | P004            |              200 |            1800 | Teh Botol        | CV Jaya Raya Semesta | Dwi Rahayu      |
+|            5 | 2020-01-20        | P005            |              100 |            2300 | Teh Kotak        | CV Jaya Raya Semesta | Dwi Rahayu      |
++--------------+-------------------+-----------------+------------------+-----------------+------------------+----------------------+-----------------+
+5 rows in set (0.001 sec)
+
+soal 3
+
+MariaDB [dbkoperasi_sibmandiri]> SELECT pesanan.tanggal, pesanan.total, pelanggan.nama,
+    -> pembayaran.nokuitansi FROM pesanan
+    -> INNER JOIN pelanggan ON pesanan.pelanggan_id = pelanggan.id
+    -> INNER JOIN pembayaran ON pembayaran.pesanan_id = pesanan.id;
++------------+-------+-------------+------------+
+| tanggal    | total | nama        | nokuitansi |
++------------+-------+-------------+------------+
+| 2015-11-04 | 17500 | Sekar Mirah | KW01       |
++------------+-------+-------------+------------+
+1 row in set (1.702 sec)
+
+MariaDB [dbkoperasi_sibmandiri]> SELECT produk.nama, produk.harga_jual,
+    -> pesanan_items.qty, pembelian.tanggal, pembelian.nomor
+    -> FROM produk INNER JOIN pesanan_items
+    -> ON pesanan_items.produk_id = produk.id
+    -> INNER JOIN pembelian
+    -> ON pembelian.produk_id = produk.id;
++------------------+------------+------+------------+-------+
+| nama             | harga_jual | qty  | tanggal    | nomor |
++------------------+------------+------+------------+-------+
+| Televisi 21 inch |    5040000 |    1 | 2019-10-10 | P001  |
+| Televisi 21 inch |    5040000 |    1 | 2019-10-10 | P001  |
+| Teh Botol        |       2500 |    3 | 2020-01-20 | P004  |
+| Teh Botol        |       2500 |    5 | 2020-01-20 | P004  |
+| Teh Botol        |       2500 |   10 | 2020-01-20 | P004  |
+| Teh Kotak        |       3500 |    5 | 2020-01-20 | P005  |
+| Teh Kotak        |       3500 |   10 | 2020-01-20 | P005  |
+| Teh Kotak        |       3500 |   10 | 2020-01-20 | P005  |
+| Teh Kotak        |       3500 |   20 | 2020-01-20 | P005  |
++------------------+------------+------+------------+-------+
+9 rows in set (1.566 sec)
+
+
+SOAL 5.2
+1. Buatlah sebuah transaction dengan skenario-skenario statement sebagai berikut:
+? Mulai transaction
+? Insert data produk sebanyak 3 record
+? Update data stok salah satu produk
+? Buat savepoint
+? Hapus salah satu data pembayaran
+? Kembali ke savepoint
+? Update data iuran salah satu kartu
+? Akhiri transaction dengan commit
+
+MariaDB [dbkoperasi_sibmandiri]> SELECT * FROM jenis_produk;
++----+------------+
+| id | nama       |
++----+------------+
+|  1 | elektronik |
+|  2 | furniture  |
+|  3 | makanan    |
+|  4 | minuman    |
+|  5 | komputer   |
++----+------------+
+5 rows in set (0.000 sec)
+
+MariaDB [dbkoperasi_sibmandiri]> START TRANSACTION;
+Query OK, 0 rows affected (0.000 sec)
+
+MariaDB [dbkoperasi_sibmandiri]> INSERT INTO jenis_produk VALUES
+    -> ('', 'Hpone'),
+    -> ('', 'chargerhp'),
+    -> ('', 'powerben');
+Query OK, 3 rows affected, 3 warnings (1.656 sec)
+Records: 3  Duplicates: 0  Warnings: 3
+
+MariaDB [dbkoperasi_sibmandiri]> SELECT * FROM jenis_produk;
++----+------------+
+| id | nama       |
++----+------------+
+|  1 | elektronik |
+|  2 | furniture  |
+|  3 | makanan    |
+|  4 | minuman    |
+|  5 | komputer   |
+|  6 | Hpone      |
+|  7 | chargerhp  |
+|  8 | powerben   |
++----+------------+
+8 rows in set (0.000 sec)
+
+MariaDB [dbkoperasi_sibmandiri]> START TRANSACTION;
+Query OK, 0 rows affected (1.749 sec)
+
+MariaDB [dbkoperasi_sibmandiri]> SAVEPOINT update_produk;
+Query OK, 0 rows affected (0.000 sec)
+
+MariaDB [dbkoperasi_sibmandiri]> UPDATE produk SET nama = 'Kulkas 2 pintu' WHERE id = 1;
+Query OK, 1 row affected (0.337 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+MariaDB [dbkoperasi_sibmandiri]> SELECT kode, nama FROM produk;
++------+------------------+
+| kode | nama             |
++------+------------------+
+| TV01 | Kulkas 2 pintu   |
+| TV02 | Televisi 40 inch |
+| K001 | Kulkas 2 pintu   |
+| M001 | Meja Makan       |
+| TK01 | Teh Kotak        |
+| PC01 | PC Desktop HP    |
+| TB01 | Teh Botol        |
+| AC01 | Notebook Acer    |
+| LN01 | Notebook Lenovo  |
+| L004 | Laptop HP        |
++------+------------------+
+10 rows in set (0.000 sec)
+
+MariaDB [dbkoperasi_sibmandiri]> ROLLBACK to update_produk;
+Query OK, 0 rows affected (1.782 sec)
+
+MariaDB [dbkoperasi_sibmandiri]> SELECT kode, nama FROM produk;
++------+------------------+
+| kode | nama             |
++------+------------------+
+| TV01 | Televisi 21 inch |
+| TV02 | Televisi 40 inch |
+| K001 | Kulkas 2 pintu   |
+| M001 | Meja Makan       |
+| TK01 | Teh Kotak        |
+| PC01 | PC Desktop HP    |
+| TB01 | Teh Botol        |
+| AC01 | Notebook Acer    |
+| LN01 | Notebook Lenovo  |
+| L004 | Laptop HP        |
++------+------------------+
+10 rows in set (0.000 sec)
+
+MariaDB [dbkoperasi_sibmandiri]> DELIMITER $$
+MariaDB [dbkoperasi_sibmandiri]> CREATE PROCEDURE pro_iuran7(
+    -> IN kartu INT,
+    -> IN peresentase_iuran INT)
+    -> BEGIN
+    -> UPDATE kartu SET iuran = iuran + (iuran * persentase_iuran / 100)
+    ->  WHERE kartu_id = kartu;
+    -> END $$
+Query OK, 0 rows affected (1.929 sec)
+
+MariaDB [dbkoperasi_sibmandiri]> DELIMITER ;
+MariaDB [dbkoperasi_sibmandiri]> SELECT kode, nama, iuran FROM kartu;
++------+---------------+--------+
+| kode | nama          | iuran  |
++------+---------------+--------+
+| GOLD | Gold Utama    | 100000 |
+| PLAT | Platinum Jaya | 150000 |
+| SLV  | Silver        |  50000 |
+| NO   | Non Member    |      0 |
++------+---------------+--------+
+4 rows in set (0.001 sec)
+
+MariaDB [dbkoperasi_sibmandiri]>
